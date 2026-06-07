@@ -165,7 +165,7 @@ async function main() {
     }
 
     // Merge selected shapes in edit mode
-    if (e.key === 'm' && state.mode === 'edit' && state.selectedIds.size >= 2) {
+    if (e.key.toLowerCase() === 'm' && state.mode === 'edit' && state.selectedIds.size >= 2) {
       e.preventDefault();
       await selectTool.doMerge();
       return;

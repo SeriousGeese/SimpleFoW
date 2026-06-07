@@ -55,7 +55,16 @@ export function drawFow(fowCtx, shapes, fowState, vp, W, H) {
     }
   }
 
+  // re-fog unrevealed shapes that overlap revealed areas (e.g. a hole inside a revealed ring)
   fowCtx.globalCompositeOperation = 'source-over';
+  fowCtx.fillStyle = 'rgba(0,0,0,1)';
+  for (const shape of shapes) {
+    if (shape.type === 'door') continue;
+    if (!fowState.get(shape.id)) {
+      pathShape(fowCtx, shape, vp);
+      fowCtx.fill();
+    }
+  }
 }
 
 // ── Map layer ─────────────────────────────────────────────────────────────────

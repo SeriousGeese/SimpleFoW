@@ -77,9 +77,9 @@ export function initToolbar() {
     const tag = document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'SELECT') return;
     const map = { s: 'select', p: 'polygon', c: 'circle', d: 'door' };
-    if (map[e.key]) {
-      setTool(map[e.key]);
-      tools.forEach(t => document.getElementById(`tool-${t}`).classList.toggle('active', t === map[e.key]));
+    if (map[e.key.toLowerCase()]) {
+      setTool(map[e.key.toLowerCase()]);
+      tools.forEach(t => document.getElementById(`tool-${t}`).classList.toggle('active', t === map[e.key.toLowerCase()]));
     }
     if (e.key === 'Escape') {
       state.drawing = { active: false, points: [], previewPoint: null };
