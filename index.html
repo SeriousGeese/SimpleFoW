@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SimpleFoW</title>
+  <link rel="stylesheet" href="/src/styles/main.css" />
+</head>
+<body>
+  <div id="toolbar">
+    <span id="app-title">SimpleFoW</span>
+    <button id="btn-mode-toggle" class="mode-btn">▶ Play Mode</button>
+    <div class="sep"></div>
+    <input type="file" id="file-upload" multiple accept="image/*" hidden />
+    <button id="btn-upload">+ Upload Map</button>
+    <select id="map-picker"><option value="">— no maps —</option></select>
+    <button id="btn-delete-map" title="Delete current map">🗑</button>
+    <div class="sep"></div>
+    <div id="edit-tools">
+      <button id="tool-select"  class="tool-btn active" title="Select / Move (S)">⬡ Select</button>
+      <button id="tool-polygon" class="tool-btn" title="Draw Polygon (P)">△ Polygon</button>
+      <button id="tool-circle"  class="tool-btn" title="Draw Circle (C)">○ Circle</button>
+      <button id="tool-door"    class="tool-btn" title="Draw Door (D)">▭ Door</button>
+    </div>
+    <div id="play-hint" class="hidden">Right-click shapes to reveal/re-fog • Scroll to zoom • Drag to pan</div>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="main-canvas"></canvas>
+    <div id="no-map-msg">Upload a map to get started</div>
+  </div>
+
+  <div id="ctx-menu" class="hidden"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
