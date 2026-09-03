@@ -3,6 +3,76 @@ import * as db from '../db.js';
 import { refresh as refreshPicker, currentMapId } from './map-picker.js';
 import { loadMap } from '../store.js';
 
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+function dataUrlToBlob(dataUrl) {
+  const [header, data] = dataUrl.split(',');
+  if (!header || data === undefined) throw new Error('Invalid image data');
+  const match = header.match(/^data:([^;]+);base64$/);
+  if (!match) throw new Error('Unsupported image data');
+  const bytes = Uint8Array.from(atob(data), c => c.charCodeAt(0));
+  return new Blob([bytes], { type: match[1] });
+}
+
+async function exportProject() {
+  const maps = await db.getMaps();
+  const exportedMaps = [];
+  for (const map of maps) {
+    const shapes = await db.getShapesForMap(map.id);
+    const fowState = await db.getFowState(map.id);
+    exportedMaps.push({
+      name: map.name,
+      width: map.width,
+      height: map.height,
+      createdAt: map.createdAt,
+      image: await blobToDataUrl(map.blob),
+      shapes,
+      fowState: [...fowState],
+    });
+  }
+  downloadBlob(
+    new Blob([JSON.stringify({ format: 'simplefow-project', version: 1, maps: exportedMaps })], { type: 'application/json' }),
+    `simplefow-${new Date().toISOString().slice(0, 10)}.json`,
+  );
+}
+
+async function importProject(file) {
+  const project = JSON.parse(await file.text());
+  if (project.format !== 'simplefow-project' || project.version !== 1 || !Array.isArray(project.maps)) {
+    throw new Error('This is not a supported SimpleFoW project file');
+  }
+  for (const map of project.maps) {
+    if (!map.name || !map.image || !Array.isArray(map.shapes) || !Array.isArray(map.fowState)) {
+      throw new Error('The project file contains an invalid map');
+    }
+    await db.importMap(
+      { name: map.name, blob: dataUrlToBlob(map.image), width: map.width, height: map.height, createdAt: map.createdAt },
+      map.shapes,
+      new Map(map.fowState),
+    );
+  }
+  return project.maps.length;
+}
+
 export function initToolbar() {
   // Mode toggle
   const modeBtn = document.getElementById('btn-mode-toggle');
@@ -32,6 +102,7 @@ export function initToolbar() {
         height: img.naturalHeight,
         createdAt: Date.now(),
       });
+
       await refreshPicker();
       document.getElementById('map-picker').value = id;
       await loadMap(id);
@@ -47,6 +118,41 @@ export function initToolbar() {
       document.getElementById('edit-tools').classList.remove('hidden');
       document.getElementById('play-hint').classList.add('hidden');
     }
+  });
+
+  document.getElementById('btn-export-project').addEventListener('click', async () => {
+    try {
+      await exportProject();
+    } catch (error) {
+      alert(`Could not export project: ${error.message}`);
+    }
+  });
+
+  document.getElementById('btn-import-project').addEventListener('click', () => {
+    document.getElementById('project-import').click();
+  });
+  document.getElementById('project-import').addEventListener('change', async e => {
+    const [file] = e.target.files;
+    if (!file) return;
+    try {
+      const importedMapCount = await importProject(file);
+      await refreshPicker();
+      const id = currentMapId();
+      if (id) await loadMap(id);
+      updateNoMapMsg();
+      alert(`Imported ${importedMapCount} map${importedMapCount === 1 ? '' : 's'}. Existing maps were kept.`);
+    } catch (error) {
+      alert(`Could not import project: ${error.message}`);
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('btn-export-view').addEventListener('click', () => {
+    const canvas = document.getElementById('main-canvas');
+    canvas.toBlob(blob => {
+      if (blob) downloadBlob(blob, `simplefow-view-${new Date().toISOString().slice(0, 10)}.png`);
+    }, 'image/png');
   });
 
   // Delete map

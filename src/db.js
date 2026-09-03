@@ -47,6 +47,22 @@ export async function getMap(id) {
   return req2p(tx('maps').get(id));
 }
 
+export async function importMap(record, shapes, fowState) {
+  const mapId = await saveMap(record);
+  const idMap = new Map();
+  for (const shape of shapes) {
+    const oldId = shape.id;
+    const { id, ...shapeWithoutId } = shape;
+    const newId = await saveShape({ ...shapeWithoutId, mapId });
+    idMap.set(oldId, newId);
+  }
+  for (const [shapeId, revealed] of fowState) {
+    const newId = idMap.get(shapeId);
+    if (newId !== undefined) await setFowRevealed(mapId, newId, revealed);
+  }
+  return mapId;
+}
+
 export async function deleteMap(id) {
   const db = _db;
   await req2p(db.transaction('maps', 'readwrite').objectStore('maps').delete(id));

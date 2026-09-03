@@ -10,6 +10,8 @@ A lightweight, browser-based **Fog of War** tool for tabletop RPGs. Upload any m
 - **Play mode** — right-click any shape to reveal or re-fog it; a designated *starting area* auto-reveals on entry
 - **Undo / Redo** — full history for both shape edits and reveal state
 - **Pan & zoom** — scroll to zoom, middle-mouse or Space + drag to pan
+- **Project backup** — export and import all maps, images, FoW state, doors, and other shapes
+- **View export** — download the current edit/play canvas as a PNG
 - **Keyboard shortcuts** — fast tool switching without leaving the keyboard
 
 ## Usage
@@ -20,6 +22,7 @@ A lightweight, browser-based **Fog of War** tool for tabletop RPGs. Upload any m
 4. Click **▶ Play Mode** to hand control to the players.
 5. Right-click any shape during play to **Reveal** or **Re-fog** it.
 6. Press **Ctrl+Shift+R** to reset all reveal state back to the start.
+7. Use **Export Project** to back up all maps and saved state, and **Import Project** on another device to restore it. **Export View** downloads the currently displayed canvas.
 
 ## Adding Fog of War (FoW)
 <img src="./docs/FogOfWar.gif" width="500" />
